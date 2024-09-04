@@ -1,6 +1,7 @@
 "use client";
 
 import * as actions from "@/actions";
+import FormButton from "@/components/common/form-button";
 import {
   Button,
   Input,
@@ -50,7 +51,7 @@ export default function TopicCreateForm() {
               </div>
             ) : null}
 
-            <Button type="submit">Submit</Button>
+            <FormButton>Save</FormButton>
           </div>
         </form>
       </PopoverContent>
