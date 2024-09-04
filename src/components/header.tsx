@@ -7,6 +7,8 @@ import {
   NavbarItem,
 } from "@nextui-org/react";
 import Link from "next/link";
+import { Suspense } from "react";
+import SearchInput from "./search-input";
 
 export default function Header() {
   return (
@@ -19,7 +21,9 @@ export default function Header() {
 
       <NavbarContent justify="center">
         <NavbarItem>
-          <Input placeholder="Search" />
+          <Suspense>
+            <SearchInput />
+          </Suspense>
         </NavbarItem>
       </NavbarContent>
 
