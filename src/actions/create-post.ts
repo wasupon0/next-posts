@@ -6,7 +6,7 @@ import paths from "@/paths";
 import type { Post } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { unknown, z } from "zod";
 
 const createPostSchema = z.object({
   title: z.string().min(3),
@@ -22,6 +22,7 @@ interface CreatePostFormState {
 }
 
 export async function createPost(
+  slug: string,
   formState: CreatePostFormState,
   formData: FormData
 ): Promise<CreatePostFormState> {
@@ -45,8 +46,48 @@ export async function createPost(
     };
   }
 
-  return {
-    errors: {},
-  };
+  const topic = await db.topic.findFirst({
+    where: {
+      slug,
+    },
+  });
+
+  if (!topic) {
+    return {
+      errors: {
+        _form: ["Cannot find topic"],
+      },
+    };
+  }
+
+  let post: Post;
+
+  try {
+    post = await db.post.create({
+      data: {
+        title: results.data.title,
+        content: results.data.content,
+        userId: session.user.id,
+        topicId: topic.id,
+      },
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return {
+        errors: {
+          _form: [err.message],
+        },
+      };
+    } else {
+      return {
+        errors: {
+          _form: ["Failed to create post"],
+        },
+      };
+    }
+  }
+
+  revalidatePath(paths.topicShow(slug));
+  redirect(paths.postShow(slug, post.id));
   // TODO: revalidate topic show page
 }
